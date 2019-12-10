@@ -6,11 +6,13 @@
         <div class="content">
           <p class="coin"><b class="num udc-bold">0</b></p>
         </div>
-        <button class="btn com-btn-small btn-go-exchange">
+        <button class="btn com-btn-small btn-go-exchange" @click="goExchange">
           点击提现
         </button>
       </div>
-      <button class="btn-rule">赏金规则</button>
+      <button class="btn-rule" @click="$router.push({ path: '/bounty/rule' })">
+        赏金规则
+      </button>
       <div class="page-bounty-data">
         <ul class="list">
           <li class="item">
@@ -58,12 +60,66 @@
       <p class="not-record">暂无更多记录</p>
     </section>
     <div class="page-coinRecord-fixed-footer">
-      <button class="com-btn-main btn">
+      <button class="com-btn-main btn" @click="showShare = true">
         点击继续邀请好友
       </button>
     </div>
+
+    <van-dialog
+      v-model="showExchange"
+      title="请输入提现金额"
+      @confirm="confirmExchange"
+      show-cancel-button
+    >
+      <van-field v-model="value" placeholder="请输入提现金额" />
+    </van-dialog>
+
+    <share-overlay v-if="showShare" @close-overlay="showShare = false" />
+
+    <msg-overlay v-if="showMessage" :msg="messageText" @close-overlay="showMessage = false" />
   </div>
 </template>
+
+<script>
+import { Dialog } from "vant";
+import shareOverlay from "@/components/shareOverlay.vue";
+import msgOverlay from "@/components/message.vue";
+
+export default {
+  components: {
+    [Dialog.Component.name]: Dialog.Component,
+    shareOverlay,
+    msgOverlay
+  },
+
+  data() {
+    return {
+      showShare: false,
+      showExchange: false,
+      value: '',
+
+      showMessage: false,
+      messageText: '无可提现余额'
+    };
+  },
+
+  methods: {
+    goExchange() {
+      // 先判断是否有可提现余额
+
+      // 有余额
+      // this.showExchange = true
+
+      //没有余额
+      this.showMessage = true
+    },
+
+    confirmExchange() {
+      console.log("点击确定执行这里的代码");
+    }
+  }
+};
+</script>
 
 <style lang="less" scoped>
 .page-bounty {
@@ -278,7 +334,7 @@
 
 .page-coinRecord-fixed-footer {
   position: fixed;
-  z-index: 10;
+  z-index: 1;
   left: 0;
   bottom: 0;
   display: flex;

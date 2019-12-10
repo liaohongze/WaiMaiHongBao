@@ -24,13 +24,20 @@
             <p class="coin-balance coin-ani-finish">
               <i class="icon com-coin"></i> <b class="num din">19</b>
             </p>
-            <button class="btn-go-coin-record">
-              粮票明细<i class="com-icon-next"></i>
+            <button
+              class="btn-go-coin-record"
+              @click="$router.push({ path: '/record' })"
+            >
+              粮票明细<van-icon name="arrow" />
             </button>
-            <!---->
           </div>
           <div class="btn-go-charge-wrapper">
-            <button class="com-btn-main btn-go-charge">粮票充值</button>
+            <button
+              class="com-btn-main btn-go-charge"
+              @click="$router.push({ path: '/charge' })"
+            >
+              粮票充值
+            </button>
           </div>
         </div>
       </div>
@@ -60,13 +67,12 @@
                   <span v-if="item.isNew" class="tip">NEW</span>
                 </h3>
                 <div class="score">
-                  <span class="udc-medium">{{item.price}}</span>粮票<span class="times"
-                    >/次</span
-                  >
+                  <span class="udc-medium">{{ item.price }}</span
+                  >粮票<span class="times">/次</span>
                 </div>
               </header>
               <p class="desc">
-                {{item.desc}}
+                {{ item.desc }}
               </p>
               <i class="icon-done"></i>
             </article>
@@ -84,21 +90,53 @@
                       maxlength="13"
                       placeholder="请输入手机号"
                       type="tel"
-                      data-id="phone"
-                      data-input-handle="onPhoneInput"
+                      v-model="phone"
                       class="input"
                     />
-                    <button class="btn-clear">
-                      <i class="icon com-icon-close"></i>
+                    <button class="btn-clear" @click="phone = ''">
+                      <van-icon name="cross" />
                     </button>
-                    <!---->
                   </div>
-                  <!---->
+                </div>
+
+                <!-- 换手机号 -->
+                <div class="container-form">
+                  <div class="input-box">
+                    <input
+                      id="container-phone-input"
+                      maxlength="13"
+                      placeholder="请输入手机号"
+                      type="tel"
+                      v-model="phone"
+                      class="input"
+                    />
+                    <button class="btn-clear" @click="phone = ''">
+                      <van-icon name="cross" />
+                    </button>
+                    <button class="btn btn-send-code">
+                      获取验证码
+                    </button>
+                  </div>
+                  <div class="input-box">
+                    <input
+                      maxlength="6"
+                      placeholder="请输入验证码"
+                      type="tel"
+                      data-id="code"
+                      data-input-handle="onCodeInput"
+                      class="input"
+                    />
+                  </div>
                 </div>
               </div>
               <div class="page-home-packages-footer">
                 <button class="com-btn-main">
                   立即领取
+                </button>
+
+                <!-- 换手机号 -->
+                <button class="com-btn-main disable" disable>
+                  点击登录并领取
                 </button>
               </div>
             </div>
@@ -126,13 +164,19 @@
         </div>
       </div>
     </section>
+
+    <receive-success v-if="showReceiveSuccess" @close-overlay="showReceiveSuccess = false" />
+    <receive-fail v-if="showReceiveFail" @close-overlay="showReceiveFail = false" />
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
+import receiveSuccess from '@/components/receiveSuccess.vue'
+import receiveFail from '@/components/receiveFail.vue'
+
 export default {
   name: "home",
+  components: { receiveSuccess, receiveFail },
   data() {
     return {
       redBags: [
@@ -185,14 +229,18 @@ export default {
             "大概率出3个品质联盟【40-6，50-7和90-14】、1个【通用红包30-4】和1个【星巴克专送红包20-9】，每个手机号每天限领1次，低于5元不扣粮票"
         }
       ],
+      phone: "",
 
-      activeBag: 1
+      activeBag: 1,
+
+      showReceiveSuccess: false,
+      showReceiveFail: false
     };
   },
 
   methods: {
     changeRedbag(id) {
-      this.activeBag = id
+      this.activeBag = id;
     }
   }
 };
@@ -303,9 +351,7 @@ export default {
 
   .top {
     display: flex;
-    -webkit-box-align: center;
     align-items: center;
-    -webkit-box-pack: justify;
     justify-content: space-between;
     margin: 0 0.666667rem;
     padding: 0.533333rem 0 0.266667rem;
@@ -348,6 +394,8 @@ export default {
     }
 
     .btn-go-coin-record {
+      display: flex;
+      align-items: center;
       font-size: 0.32rem;
       color: #8c8f95;
       line-height: 0.48rem;
@@ -356,9 +404,7 @@ export default {
 
   .user_info {
     .desc {
-      display: -webkit-box;
       display: flex;
-      -webkit-box-align: center;
       align-items: center;
 
       .avatar {
@@ -386,7 +432,7 @@ export default {
 .com-page-section {
   position: relative;
   z-index: 1;
-  background: #fff;
+  background: transparent;
 
   .section-title {
     position: relative;
@@ -560,10 +606,35 @@ export default {
     height: 0.48rem;
     border-radius: 1.333333rem;
     background: #c7c8ca;
+
+    .van-icon {
+      display: block;
+      font-size: 0.32rem;
+      color: #fff;
+      font-weight: 700;
+      line-height: 0.493333rem;
+      -webkit-transform: scale(0.85);
+      transform: scale(0.85);
+      -webkit-transform-origin: 50%;
+      transform-origin: 50%;
+    }
   }
 
   .page-home-packages-footer {
     margin: 0.466667rem 0 0;
+  }
+
+  .btn {
+    flex-shrink: 0;
+    width: max-content;
+    padding: 0.066667rem 0.266667rem;
+    font-size: 0.373333rem;
+    color: #13100f;
+    font-weight: 700;
+    line-height: 1.5;
+    border: 0.04rem solid #e7e8ea;
+    border-radius: 1.333333rem;
+    background: #fff;
   }
 }
 

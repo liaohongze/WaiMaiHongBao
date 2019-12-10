@@ -7,7 +7,9 @@
           <i class="com-coin icon"></i><b class="num din">19</b>
         </p>
       </div>
-      <div class="user_info"><i class="icon com-icon-back"></i>返回首页</div>
+      <div class="user_info" @click="$router.push({ path: '/' })">
+        <van-icon name="arrow-left" />返回首页
+      </div>
     </header>
     <div class="page-topUp-container">
       <div class="com-page-section">
@@ -91,8 +93,31 @@
         </ul>
       </div>
     </div>
+
+    <van-overlay :show="showSuccess" :z-index="2" @click="showSuccess = false">
+      <section class="page-top-up-success-pop-box">
+        <i class="icon"></i>
+        <p class="score">
+          <b class="b din">1400</b><span class="unit">粮票</span>
+        </p>
+        <span class="desc">已成功充值到账户中</span>
+        <div class="btn-wrapper">
+          <button class="com-btn-main btn-ok">知道了</button>
+        </div>
+      </section>
+    </van-overlay>
   </div>
 </template>
+
+<script>
+export default {
+  data() {
+    return {
+      showSuccess: false
+    };
+  }
+};
+</script>
 
 <style lang="less" scoped>
 #page-top-up {
@@ -181,9 +206,9 @@
 
   .user_info {
     display: flex;
+    align-items: center;
     height: 0.666667rem;
-    line-height: 0.666667rem;
-    padding: 0 0.333333rem 0 0.133333rem;
+    padding: 0.133333rem 0.333333rem 0.133333rem 0.133333rem;
     border-radius: 1.333333rem 0 0 1.333333rem;
     background: linear-gradient(45deg, #1941c6, #2052e2);
     font-size: 0.373333rem;
@@ -191,10 +216,7 @@
     font-weight: 400;
     line-height: 0.666667rem;
 
-    .icon {
-      display: block;
-      width: 0.533333rem;
-      height: 0.533333rem;
+    .van-icon {
       text-align: center;
       opacity: 0.6;
     }
@@ -390,11 +412,84 @@
   }
 }
 
+.page-top-up-success-pop-box {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 50%;
+  transform: translate3d(-50%, -50%, 0);
+  width: 7.333333rem;
+  height: 6.933333rem;
+  background: url("../assets/images/charge-success-bg.svg") no-repeat top;
+  background-size: 100% auto;
+  padding: 0.853333rem 0 0;
+  box-sizing: border-box;
+  opacity: 0;
+  animation: page-top-up-success-pop-box 0.5s ease-out 0.1s forwards;
+
+  .score {
+    margin: 0.533333rem 0 0;
+    text-align: center;
+    font-size: 0.96rem;
+    color: #e34a24;
+    font-weight: 400;
+    line-height: 1.066667rem;
+
+    .unit {
+      font-size: 0.32rem;
+    }
+  }
+
+  .icon {
+    display: block;
+    width: 1.466667rem;
+    height: 1.466667rem;
+    margin: 0 auto;
+    transform: translate3d(0.066667rem, 0, 0);
+    background: url(../assets/images/charge-success.svg) no-repeat
+      50%;
+    background-size: 100% auto;
+  }
+
+  .desc {
+    margin: -0.066667rem 0 0;
+    display: block;
+    text-align: center;
+    font-size: 0.32rem;
+    color: #8c8f95;
+    line-height: 0.48rem;
+  }
+
+  .btn-wrapper {
+    margin: 0.333333rem 0.733333rem;
+  }
+}
+
 @keyframes page-top-up-header-coin {
   to {
     opacity: 1;
     -webkit-transform: scale(1.02);
     transform: scale(1.02);
+  }
+}
+
+@keyframes page-top-up-success-pop-box {
+  50% {
+    opacity: 0;
+    -webkit-transform: translate3d(-50%, -60%, 0) scale(0.9);
+    transform: translate3d(-50%, -60%, 0) scale(0.9);
+  }
+
+  75% {
+    opacity: 1;
+    -webkit-transform: translate3d(-50%, -60%, 0) scale(1.05);
+    transform: translate3d(-50%, -60%, 0) scale(1.05);
+  }
+
+  to {
+    opacity: 1;
+    -webkit-transform: translate3d(-50%, -60%, 0) scale(1);
+    transform: translate3d(-50%, -60%, 0) scale(1);
   }
 }
 </style>

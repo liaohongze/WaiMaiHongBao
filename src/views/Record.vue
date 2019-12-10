@@ -8,7 +8,10 @@
             <b class="num udc-bold">19</b> <span class="unit">张</span>
           </p>
         </div>
-        <button class="btn com-btn-small btn-go-exchange">
+        <button
+          class="btn com-btn-small btn-go-exchange"
+          @click="$router.push({ path: '/charge' })"
+        >
           点击充值粮票
         </button>
       </div>
@@ -19,15 +22,17 @@
         <li v-for="item in recordList" :key="item.id" class="item">
           <div class="left">
             <p class="info">
-              <b class="name">{{item.name}}</b>
-              <time class="time">{{item.time}}</time>
+              <b class="name">{{ item.name }}</b>
+              <time class="time">{{ item.time }}</time>
             </p>
           </div>
-          <div class="right"><b class="num udc-bold">{{item.num}}</b></div>
+          <div class="right">
+            <b class="num udc-bold">{{ item.num }}</b>
+          </div>
         </li>
       </ul>
+      <p class="not-record" @click="getList">点击加载更多</p>
       <p class="not-record">暂无更多记录</p>
-      <div class="com-record-list-btn-wrapper"><!----></div>
     </section>
   </div>
 </template>
@@ -39,42 +44,86 @@ export default {
       recordList: [
         {
           id: 1,
-          name: '领取【品质联盟35-5】',
-          time: '2019/12/05 18:54',
+          name: "领取【品质联盟35-5】",
+          time: "2019/12/05 18:54",
           num: -5
         },
         {
           id: 2,
-          name: '粮票充值（2.99元）',
-          time: '2019/12/05 15:51',
+          name: "粮票充值（2.99元）",
+          time: "2019/12/05 15:51",
           num: +24
         },
         {
           id: 3,
-          name: '领取【全场通用35-5】',
-          time: '2019/12/05 18:54',
+          name: "领取【全场通用35-5】",
+          time: "2019/12/05 18:54",
           num: -5
         },
         {
           id: 4,
-          name: '领取【4合1红包礼包】',
-          time: '2019/12/05 18:54',
+          name: "领取【4合1红包礼包】",
+          time: "2019/12/05 18:54",
           num: -5
         },
         {
           id: 5,
-          name: '绑定手机送粮票',
-          time: '2019/12/05 18:54',
+          name: "绑定手机送粮票",
+          time: "2019/12/05 18:54",
           num: +5
         },
         {
           id: 6,
-          name: '关注公众号',
-          time: '2019/12/05 18:54',
+          name: "关注公众号",
+          time: "2019/12/05 18:54",
           num: +5
-        },
+        }
       ]
     };
+  },
+
+  methods: {
+    getList() {
+      let example = [
+        {
+          id: 1,
+          name: "领取【品质联盟35-5】",
+          time: "2019/12/05 18:54",
+          num: -5
+        },
+        {
+          id: 2,
+          name: "粮票充值（2.99元）",
+          time: "2019/12/05 15:51",
+          num: +24
+        },
+        {
+          id: 3,
+          name: "领取【全场通用35-5】",
+          time: "2019/12/05 18:54",
+          num: -5
+        },
+        {
+          id: 4,
+          name: "领取【4合1红包礼包】",
+          time: "2019/12/05 18:54",
+          num: -5
+        },
+        {
+          id: 5,
+          name: "绑定手机送粮票",
+          time: "2019/12/05 18:54",
+          num: +5
+        },
+        {
+          id: 6,
+          name: "关注公众号",
+          time: "2019/12/05 18:54",
+          num: +5
+        }
+      ];
+      this.recordList = [...this.recordList, ...example]
+    }
   }
 };
 </script>

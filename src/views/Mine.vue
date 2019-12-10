@@ -17,7 +17,7 @@
               <button class="right-bottom-item">
                 17605926688
                 <span class="btn-text">更换</span>
-                <i class="icon base-icon-font-next-2"></i>
+                <van-icon name="play" />
               </button>
             </div>
           </div>
@@ -26,22 +26,32 @@
     </div>
     <section class="page-mine-assets">
       <ul class="list">
-        <li data-index="0" class="item item-balance">
+        <li
+          data-index="0"
+          class="item item-balance"
+          @click="$router.push({ path: '/bounty' })"
+        >
           <p class="balance">
             <b class="num udc-bold">0</b> <span class="unit">元</span>
           </p>
           <p class="top">
-            <i class="icon icon-redbag"></i> <b class="title">可提现余额</b>
-            <i class="icon-next base-icon-font-next"></i>
+            <van-icon name="gold-coin" />
+            <b class="title">可提现余额</b>
+            <van-icon name="arrow" />
           </p>
         </li>
-        <li data-index="1" class="item item-balance">
+        <li
+          data-index="1"
+          class="item item-balance"
+          @click="$router.push({ path: '/record' })"
+        >
           <p class="balance">
             <b class="num udc-bold">19</b> <span class="unit">张</span>
           </p>
           <p class="top">
-            <i class="icon icon-coin"></i> <b class="title">我的粮票</b>
-            <i class="icon-next base-icon-font-next"></i>
+            <van-icon name="coupon" />
+            <b class="title">我的粮票</b>
+            <van-icon name="arrow" />
           </p>
         </li>
       </ul>
@@ -102,12 +112,14 @@
         <div class="right">
           <div class="invite-info">
             <div class="invite-list"><!----></div>
-            <div class="text">
+            <div class="text" @click="$router.push({ path: '/inviteRecord' })">
               好友列表
-              <div class="icon base-icon-font-next"></div>
+              <van-icon name="arrow" />
             </div>
           </div>
-          <button class="btn-go-invite">分享给好友</button>
+          <button class="btn-go-invite" @click="showShare = true">
+            分享给好友
+          </button>
         </div>
       </article>
       <article class="invite-footer">
@@ -115,17 +127,51 @@
           <span class="guide-text">邀请链接</span>
           <div class="invite-code-wrapper">
             <p class="invite-code">
-              https://free2.airdropx.top/?i=01od2l#/invite/accept
+              {{ inviteUrl }}
             </p>
-            <button class="btn-copy-invite-code">点击复制</button>
+            <button
+              class="btn-copy-invite-code"
+              v-clipboard:copy="inviteUrl"
+              v-clipboard:success="onCopy"
+            >
+              点击复制
+            </button>
           </div>
         </div>
       </article>
     </section>
-    <!---->
-    <!---->
+
+    <share-overlay v-if="showShare" @close-overlay="showShare = false" />
+    <msg-overlay
+      v-if="showMessage"
+      :msg="messageText"
+      @close-overlay="showMessage = false"
+    />
   </div>
 </template>
+
+<script>
+import shareOverlay from "@/components/shareOverlay.vue";
+import msgOverlay from "@/components/message.vue";
+
+export default {
+  components: { shareOverlay, msgOverlay },
+  data() {
+    return {
+      showShare: false,
+      showMessage: false,
+      messageText: "复制成功",
+      inviteUrl: "https://free2.airdropx.top/?i=01od2l#/invite/accept"
+    };
+  },
+
+  methods: {
+    onCopy() {
+      this.showMessage = true;
+    }
+  }
+};
+</script>
 
 <style lang="less" scoped>
 #page-mine {
@@ -200,6 +246,8 @@
   }
 
   .right-bottom-item {
+    display: flex;
+    align-items: center;
     padding: 0.026667rem 0.066667rem 0.026667rem 0.266667rem;
     font-size: 0.32rem;
     color: hsla(0, 0%, 100%, 0.9);
@@ -216,12 +264,10 @@
       transform-origin: 0 50%;
     }
 
-    .icon {
+    .van-icon {
       display: inline-block;
       margin: 0 0 0 -0.16rem;
       color: hsla(0, 0%, 100%, 0.4);
-      transform: scale(0.6);
-      transform-origin: 0 50%;
     }
   }
 }
@@ -279,6 +325,26 @@
     margin: 0 0 0 0.133333rem;
     font-size: 0.346667rem;
     color: #5c4f4e;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  .van-icon-gold-coin,
+  .van-icon-coupon {
+    width: 0.666667rem;
+    height: 0.666667rem;
+    border-radius: 1.333333rem;
+    font-size: 0.506667rem;
+    color: #2864fa;
+    font-weight: 400;
+    line-height: 0.666667rem;
+    background: rgba(40, 100, 250, 0.07);
+    text-align: center;
+  }
+
+  .van-icon-arrow {
+    font-size: 0.32rem;
+    color: #beb4b2;
     font-weight: 400;
     line-height: 1.5;
   }
