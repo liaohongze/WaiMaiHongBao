@@ -3,19 +3,16 @@
     <div class="page-mine-header">
       <div class="container">
         <div class="page-mine-user-info">
-          <img
-            src="http://thirdwx.qlogo.cn/mmopen/vtnuMBibofcae3JX7F4u7rCUTBOn8x9e7lCQYOuglKjjdb0jh4mfEeEDFV5EQem2YlgWRc6dGnJ9rl8wbC7Y5yJTqC7UFicsIT/132"
-            class="avatar"
-          />
+          <img :src="userInfo.headimgurl" class="avatar" />
           <div class="right">
             <div class="info">
               <div class="nickname">
-                陈文龙
+                {{ userInfo.nickname }}
               </div>
             </div>
-            <div class="right-bottom">
+            <div class="right-bottom" v-show="userInfo.mobile">
               <button class="right-bottom-item">
-                17605926688
+                {{ userInfo.mobile }}
                 <span class="btn-text">更换</span>
                 <van-icon name="play" />
               </button>
@@ -32,7 +29,8 @@
           @click="$router.push({ path: '/bounty' })"
         >
           <p class="balance">
-            <b class="num udc-bold">0</b> <span class="unit">元</span>
+            <b class="num udc-bold">{{ userInfo.cms }}</b>
+            <span class="unit">元</span>
           </p>
           <p class="top">
             <van-icon name="gold-coin" />
@@ -46,7 +44,8 @@
           @click="$router.push({ path: '/record' })"
         >
           <p class="balance">
-            <b class="num udc-bold">19</b> <span class="unit">张</span>
+            <b class="num udc-bold">{{ userInfo.score }}</b>
+            <span class="unit">张</span>
           </p>
           <p class="top">
             <van-icon name="coupon" />
@@ -67,7 +66,7 @@
           <div
             class="page-mine-nav-list page-min-nav-list page-mine-nav-list-normal"
           >
-            <button data-index="0" class="item">
+            <button @click="$router.push('/charge')" class="item">
               <img
                 src="../assets/images/icon/icon-top-up_small.png"
                 class="icon"
@@ -76,7 +75,7 @@
                 粮票充值
               </div>
             </button>
-            <button data-index="1" class="item">
+            <button @click="$router.push('/faq')" class="item">
               <img src="../assets/images/icon/icon-qa_small.png" class="icon" />
               <div class="text">
                 常见问题
@@ -122,7 +121,7 @@
           </button>
         </div>
       </article>
-      <article class="invite-footer">
+      <!-- <article class="invite-footer">
         <div class="invite-footer-container">
           <span class="guide-text">邀请链接</span>
           <div class="invite-code-wrapper">
@@ -138,7 +137,7 @@
             </button>
           </div>
         </div>
-      </article>
+      </article> -->
     </section>
 
     <share-overlay v-if="showShare" @close-overlay="showShare = false" />
@@ -151,8 +150,9 @@
 </template>
 
 <script>
-import shareOverlay from "@/components/shareOverlay.vue";
-import msgOverlay from "@/components/message.vue";
+import { mapGetters } from 'vuex'
+import shareOverlay from '@/components/shareOverlay.vue'
+import msgOverlay from '@/components/message.vue'
 
 export default {
   components: { shareOverlay, msgOverlay },
@@ -160,17 +160,21 @@ export default {
     return {
       showShare: false,
       showMessage: false,
-      messageText: "复制成功",
-      inviteUrl: "https://free2.airdropx.top/?i=01od2l#/invite/accept"
-    };
+      messageText: '复制成功',
+      inviteUrl: 'https://free2.airdropx.top/?i=01od2l#/invite/accept'
+    }
+  },
+
+  computed: {
+    ...mapGetters(['userInfo'])
   },
 
   methods: {
     onCopy() {
-      this.showMessage = true;
+      this.showMessage = true
     }
   }
-};
+}
 </script>
 
 <style lang="less" scoped>
@@ -193,7 +197,7 @@ export default {
   background: #2864fa;
 
   &:before {
-    content: "";
+    content: '';
     position: absolute;
     z-index: -1;
     left: 0;
@@ -559,7 +563,7 @@ export default {
     border-radius: 1.333333rem;
 
     &:before {
-      content: "";
+      content: '';
       position: absolute;
       z-index: 1;
       left: 0;

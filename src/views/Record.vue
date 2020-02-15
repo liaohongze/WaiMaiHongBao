@@ -5,7 +5,8 @@
         <div class="title">当前剩余粮票</div>
         <div class="content">
           <p class="coin">
-            <b class="num udc-bold">19</b> <span class="unit">张</span>
+            <b class="num udc-bold">{{ userInfo.score }}</b>
+            <span class="unit">张</span>
           </p>
         </div>
         <button
@@ -19,113 +20,68 @@
 
     <section id="page-coinRecord-list" class="com-record-list">
       <ul class="list">
-        <li v-for="item in recordList" :key="item.id" class="item">
+        <li v-for="(item, index) in recordList" :key="index" class="item">
           <div class="left">
             <p class="info">
-              <b class="name">{{ item.name }}</b>
-              <time class="time">{{ item.time }}</time>
+              <b class="name">{{ item.title }}</b>
+              <time class="time">{{
+                timestampToTime(item.createdAt * 1000)
+              }}</time>
             </p>
           </div>
           <div class="right">
-            <b class="num udc-bold">{{ item.num }}</b>
+            <b class="num udc-bold">{{ item.score }}</b>
           </div>
         </li>
       </ul>
-      <p class="not-record" @click="getList">点击加载更多</p>
-      <p class="not-record">暂无更多记录</p>
+
+      <button class="get_more" v-if="showGetmore" @click="getList">
+        点击加载更多
+      </button>
+      <p class="not-record" v-else>暂无更多记录</p>
     </section>
   </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+import { timestampToTime } from '@/utils/index.js'
+
 export default {
   data() {
     return {
-      recordList: [
-        {
-          id: 1,
-          name: "领取【品质联盟35-5】",
-          time: "2019/12/05 18:54",
-          num: -5
-        },
-        {
-          id: 2,
-          name: "粮票充值（2.99元）",
-          time: "2019/12/05 15:51",
-          num: +24
-        },
-        {
-          id: 3,
-          name: "领取【全场通用35-5】",
-          time: "2019/12/05 18:54",
-          num: -5
-        },
-        {
-          id: 4,
-          name: "领取【4合1红包礼包】",
-          time: "2019/12/05 18:54",
-          num: -5
-        },
-        {
-          id: 5,
-          name: "绑定手机送粮票",
-          time: "2019/12/05 18:54",
-          num: +5
-        },
-        {
-          id: 6,
-          name: "关注公众号",
-          time: "2019/12/05 18:54",
-          num: +5
-        }
-      ]
-    };
+      page: 1,
+      limit: 20,
+      recordList: [],
+      showGetmore: true
+    }
+  },
+
+  computed: {
+    ...mapGetters(['userInfo'])
+  },
+
+  mounted() {
+    this.getList()
   },
 
   methods: {
-    getList() {
-      let example = [
-        {
-          id: 1,
-          name: "领取【品质联盟35-5】",
-          time: "2019/12/05 18:54",
-          num: -5
-        },
-        {
-          id: 2,
-          name: "粮票充值（2.99元）",
-          time: "2019/12/05 15:51",
-          num: +24
-        },
-        {
-          id: 3,
-          name: "领取【全场通用35-5】",
-          time: "2019/12/05 18:54",
-          num: -5
-        },
-        {
-          id: 4,
-          name: "领取【4合1红包礼包】",
-          time: "2019/12/05 18:54",
-          num: -5
-        },
-        {
-          id: 5,
-          name: "绑定手机送粮票",
-          time: "2019/12/05 18:54",
-          num: +5
-        },
-        {
-          id: 6,
-          name: "关注公众号",
-          time: "2019/12/05 18:54",
-          num: +5
-        }
-      ];
-      this.recordList = [...this.recordList, ...example]
+    timestampToTime,
+    async getList() {
+      const res = await this.$api.scoreRecords({
+        page: this.page,
+        limit: this.limit
+      })
+
+      if (res.data && res.data.length) {
+        this.recordList = [...this.recordList, ...res.data]
+        this.page = this.page + 1
+      } else {
+        this.showGetmore = false
+      }
     }
   }
-};
+}
 </script>
 
 <style lang="less" scoped>
@@ -258,5 +214,19 @@ export default {
       line-height: 0.56rem;
     }
   }
+}
+
+.get_more {
+  display: block;
+  padding: 1vw 2vw;
+  margin: 2vw auto;
+  font-size: 3.5vw;
+  color: rgba(255, 255, 255, 1);
+  background: linear-gradient(
+    267deg,
+    rgba(41, 85, 255, 1) 0%,
+    rgba(39, 134, 255, 1) 100%
+  );
+  border-radius: 0.9vw;
 }
 </style>

@@ -11,16 +11,16 @@
 
 <script>
 export default {
-  name: "messageOverlay",
-  props: ["msg"],
+  name: 'messageOverlay',
+  props: ['msg'],
   data() {
     return {
       show: false
-    };
+    }
   },
 
   mounted() {
-    this.show = true;
+    this.show = true
   }
-};
+}
 </script>

@@ -5,33 +5,39 @@
         <div class="title">好友数</div>
         <div class="content">
           <p class="coin">
-            <b class="num udc-bold">1</b> <span class="unit">人</span>
+            <b class="num udc-bold">{{ recordList.length }}</b>
+            <span class="unit">人</span>
           </p>
         </div>
-        <button class="btn com-btn-small btn-go-exchange" @click="showShare = true">
+        <button
+          class="btn com-btn-small btn-go-exchange"
+          @click="showShare = true"
+        >
           邀请好友
         </button>
       </div>
     </div>
     <section id="page-inviteRecord-list" class="com-record-list">
       <ul class="list">
-        <li class="item">
+        <li class="item" v-for="(item, index) in recordList" :key="index">
           <div class="left">
             <figure class="avatar com-img-wrapper">
-              <img
-                src="http://thirdwx.qlogo.cn/mmopen/bUv4vU38j1no7kUicFlB9o5nea0c54qpXViaZKjm6lm9g2icC0W3Iia4rBxwHu2OLic07ZJbXT07LWFtKIMxzfcAxYg/132"
-                class="img"
-              />
+              <img :src="item.headimgurl" class="img" />
             </figure>
             <p class="info">
-              <b class="name"><b class="bold">Lasura</b>接受了您的邀请</b>
-              <time class="time">2019/12/10 21:06</time>
+              <b class="name"
+                ><b class="bold">{{ item.nickname }}</b
+                >接受了您的邀请</b
+              >
+              <time class="time">{{ item.createdAt }}</time>
             </p>
           </div>
           <div class="right"><b class="num din">5</b></div>
         </li>
       </ul>
-      <p class="not-record">暂无更多记录</p>
+
+      <button class="get_more" v-if="page <= total" @click="getList">点击加载更多</button>
+      <p class="not-record" v-else>暂无更多记录</p>
       <div class="com-record-list-btn-wrapper"><!----></div>
     </section>
 
@@ -40,22 +46,43 @@
 </template>
 
 <script>
-import shareOverlay from "@/components/shareOverlay.vue";
+import shareOverlay from '@/components/shareOverlay.vue'
 
 export default {
   components: { shareOverlay },
   data() {
     return {
-      showShare: false
-    };
+      showShare: false,
+      page: 1,
+      limit: 20,
+      total: 0,
+      recordList: []
+    }
   },
+
+  beforeMount() {
+    this.getList()
+  },
+
+  methods: {
+    async getList() {
+      let { list, totalInviteNum } = await this.$api.getInviteRecords({
+        page: this.page,
+        limit: this.limit
+      })
+
+      this.recordList = list || []
+      this.page = this.page + 1
+      this.total = Math.ceil(totalInviteNum / this.limit)
+    }
+  }
 }
 </script>
 
 <style lang="less" scoped>
 #page-inviteRecord {
   &:before {
-    content: "";
+    content: '';
     position: fixed;
     z-index: -1;
     left: 0;
@@ -216,5 +243,19 @@ export default {
   width: 100%;
   height: 100%;
   border-radius: 100%;
+}
+
+.get_more {
+  display: block;
+  padding: 1vw 2vw;
+  margin: 2vw auto;
+  font-size: 3.5vw;
+  color: rgba(255, 255, 255, 1);
+  background: linear-gradient(
+    267deg,
+    rgba(41, 85, 255, 1) 0%,
+    rgba(39, 134, 255, 1) 100%
+  );
+  border-radius: 0.9vw;
 }
 </style>

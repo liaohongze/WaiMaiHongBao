@@ -53,13 +53,13 @@ export default {
   data() {
     return {
       show: false
-    };
+    }
   },
 
   mounted() {
-    this.show = true;
+    this.show = true
   }
-};
+}
 </script>
 
 <style lang="less" scoped>
@@ -96,13 +96,13 @@ export default {
     cubic-bezier(0, 0.47, 0.45, 1.05) 0.4s forwards;
 
   &:before {
-    content: "";
+    content: '';
     position: absolute;
     left: 0;
     top: -1.253333rem;
     width: 100%;
     height: 1.266667rem;
-    background: url("../assets/images/redbag-head.svg") no-repeat top;
+    background: url('../assets/images/redbag-head.svg') no-repeat top;
     background-size: 100% auto;
   }
 
@@ -197,7 +197,7 @@ export default {
 
       &:after,
       &:before {
-        content: "";
+        content: '';
         position: absolute;
         z-index: 1;
         left: 50%;
@@ -230,14 +230,13 @@ export default {
     background: #ea5644;
 
     &:before {
-      content: "";
+      content: '';
       position: absolute;
       left: 0;
       top: -0.56rem;
       width: 100%;
       height: 0.6rem;
-      background: url('../assets/images/redbag-foot-befero.svg')
-        no-repeat top;
+      background: url('../assets/images/redbag-foot-befero.svg') no-repeat top;
       background-size: 100% auto;
     }
   }

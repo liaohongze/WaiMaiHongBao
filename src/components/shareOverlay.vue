@@ -5,7 +5,7 @@
       <div class="img-wrapper show">
         <i class="img-fake"></i>
         <img
-          src="https://free2.airdropx.top/card_img/1_72951.jpg"
+          :src="poster"
           class="img"
         />
       </div>
@@ -16,17 +16,31 @@
 
 <script>
 export default {
-  name: "shareOverlay",
+  name: 'shareOverlay',
   data() {
     return {
-      show: false
+      show: false,
+      poster: ''
     }
   },
 
-  mounted() {
+  created() {
+    this.getPoster()
+  },
+
+  beforeMount() {
     this.show = true
+  },
+
+  methods: {
+    async getPoster() {
+      const {
+        data: { url }
+      } = await this.$api.getPoster()
+      this.poster = url
+    }
   }
-};
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

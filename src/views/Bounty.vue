@@ -4,7 +4,9 @@
       <div class="page-bounty-assets">
         <div class="title">当前可提现赏金(元)</div>
         <div class="content">
-          <p class="coin"><b class="num udc-bold">0</b></p>
+          <p class="coin">
+            <b class="num udc-bold">{{ userInfo.cms }}</b>
+          </p>
         </div>
         <button class="btn com-btn-small btn-go-exchange" @click="goExchange">
           点击提现
@@ -18,7 +20,8 @@
           <li class="item">
             <span class="name">累计收益</span>
             <b class="number"
-              ><span class="udc-medium">0</span> <span class="unit">元</span></b
+              ><span class="udc-medium">{{ totalCms }}</span>
+              <span class="unit">元</span></b
             >
           </li>
           <li class="item">
@@ -30,7 +33,8 @@
           <li class="item">
             <span class="name">累计推广人数</span>
             <b class="number"
-              ><span class="udc-medium">0</span> <span class="unit">人</span></b
+              ><span class="udc-medium">{{ totalInviteNum }}</span>
+              <span class="unit">人</span></b
             >
           </li>
         </ul>
@@ -56,8 +60,27 @@
         </div>
         <div class="right"></div>
       </div>
-      <div class="page-bounty-record-list"></div>
-      <p class="not-record">暂无更多记录</p>
+      <div class="page-bounty-record-list">
+        <ul>
+          <li v-for="(item, index) in recordList" :key="index">
+            <div class="recordlf">
+              <img :src="item.headimgurl" alt="" />
+              <div>
+                <p>{{ item.nickname }}</p>
+                <p>{{ timestampToTime(item.createdAt * 1000) }}</p>
+              </div>
+            </div>
+            <div class="recordrt">
+              <span>+{{ item.cms }}元</span>
+            </div>
+            <div class="clear"></div>
+          </li>
+        </ul>
+      </div>
+      <button class="get_more" v-if="showGetmore" @click="getList">
+        点击加载更多
+      </button>
+      <p class="not-record" v-else>暂无更多记录</p>
     </section>
     <div class="page-coinRecord-fixed-footer">
       <button class="com-btn-main btn" @click="showShare = true">
@@ -76,14 +99,20 @@
 
     <share-overlay v-if="showShare" @close-overlay="showShare = false" />
 
-    <msg-overlay v-if="showMessage" :msg="messageText" @close-overlay="showMessage = false" />
+    <msg-overlay
+      v-if="showMessage"
+      :msg="messageText"
+      @close-overlay="showMessage = false"
+    />
   </div>
 </template>
 
 <script>
-import { Dialog } from "vant";
-import shareOverlay from "@/components/shareOverlay.vue";
-import msgOverlay from "@/components/message.vue";
+import { mapGetters } from 'vuex'
+import { timestampToTime } from '@/utils/index.js'
+import { Dialog } from 'vant'
+import shareOverlay from '@/components/shareOverlay.vue'
+import msgOverlay from '@/components/message.vue'
 
 export default {
   components: {
@@ -94,31 +123,61 @@ export default {
 
   data() {
     return {
+      recordList: [],
+      totalCms: '',
+      totalInviteNum: '',
       showShare: false,
-      showExchange: false,
+      showExchange: true,
       value: '',
+      page: 1,
+      limit: 20,
 
       showMessage: false,
-      messageText: '无可提现余额'
-    };
+      messageText: '无可提现余额',
+      showGetmore: true
+    }
+  },
+
+  computed: {
+    ...mapGetters(['userInfo'])
+  },
+
+  beforeMount() {
+    this.getRecords()
   },
 
   methods: {
+    timestampToTime,
+
+    async getRecords() {
+      const res = await this.$api.Records({
+        page: this.page,
+        limit: this.limit
+      })
+
+      if (res.data && res.data.length) {
+        this.recordList = [...this.recordList, ...res.data.list]
+        this.totalCms = res.data.totalCms
+        this.totalInviteNum = res.data.totalInviteNum
+      } else {
+        this.showGetmore = false
+      }
+    },
+
     goExchange() {
       // 先判断是否有可提现余额
-
-      // 有余额
-      // this.showExchange = true
-
-      //没有余额
-      this.showMessage = true
+      if (Number(this.userInfo.cms) >= 2) {
+        this.showExchange = true
+      } else {
+        this.showMessage = true
+      }
     },
 
     confirmExchange() {
-      console.log("点击确定执行这里的代码");
+      console.log('点击确定执行这里的代码')
     }
   }
-};
+}
 </script>
 
 <style lang="less" scoped>
@@ -128,7 +187,7 @@ export default {
   box-sizing: border-box;
 
   &:before {
-    content: "";
+    content: '';
     position: fixed;
     z-index: -1;
     left: 0;
@@ -295,7 +354,7 @@ export default {
       line-height: 1.5;
 
       &:before {
-        content: "";
+        content: '';
         flex-shrink: 0;
         margin: 0 0.133333rem 0 0;
         width: 0.08rem;
@@ -321,6 +380,60 @@ export default {
 
 .page-bounty-record-list {
   margin: 0 0.4rem;
+
+  ul {
+    margin-top: 3.5vw;
+    padding: 0 5.7vw 0 0.7vw;
+    li {
+      width: 100%;
+      height: 15.5vw;
+      border-bottom: 0.2vw solid rgba(245, 245, 245, 1);
+      padding: 3.2vw 0.9vw 0;
+      .recordlf {
+        float: left;
+        display: flex;
+        img {
+          width: 9.26vw;
+          height: 9.26vw;
+          border-radius: 0.6vw;
+          overflow: hidden;
+        }
+        p {
+          height: 3.4vw;
+          line-height: 1;
+          font-size: 3.5vw;
+          font-weight: 400;
+          color: rgba(43, 41, 41, 1);
+          display: block;
+          margin-top: 0.9vw;
+          text-align: left;
+          margin-left: 2.7vw;
+          width: 100%;
+          &:nth-of-type(2) {
+            height: 2.8vw;
+            line-height: 1;
+            font-size: 2.8vw;
+            color: rgba(138, 138, 138, 1);
+            margin-top: 1.9vw;
+          }
+        }
+      }
+      .recordrt {
+        float: right;
+        span {
+          height: 3.4vw;
+          display: inline-block;
+          line-height: 1;
+          font-size: 3.7vw;
+          font-weight: 500;
+          color: rgba(255, 79, 50, 1);
+        }
+      }
+      .clear {
+        clear: both;
+      }
+    }
+  }
 }
 
 .page-bounty .not-record {
@@ -351,5 +464,19 @@ export default {
     background: #f03346;
     border-radius: 1.333333rem;
   }
+}
+
+.get_more {
+  display: block;
+  padding: 1vw 2vw;
+  margin: 2vw auto;
+  font-size: 3.5vw;
+  color: rgba(255, 255, 255, 1);
+  background: linear-gradient(
+    267deg,
+    rgba(41, 85, 255, 1) 0%,
+    rgba(39, 134, 255, 1) 100%
+  );
+  border-radius: 0.9vw;
 }
 </style>

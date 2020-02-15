@@ -1,7 +1,7 @@
 <template>
   <van-overlay :show="show" :z-index="3" @click="$emit('close-overlay')">
     <div class="com-dialog-box">
-      <div class="com-dialog-title">抱歉，领取失败</div>
+      <div class="com-dialog-title">{{msg}}</div>
       <div class="com-dialog-content">
         <!-- 内容为富文本，样式直接写在元素上 -->
         <div>
@@ -36,14 +36,15 @@
 
 <script>
 export default {
+  props: ['msg'],
   data() {
     return {
       show: false
-    };
+    }
   },
 
   mounted() {
-    this.show = true;
+    this.show = true
   }
-};
+}
 </script>

@@ -13,16 +13,14 @@
             <div class="user_info">
               <div class="desc">
                 <figure class="avatar com-img-wrapper">
-                  <img
-                    src="http://thirdwx.qlogo.cn/mmopen/vtnuMBibofcae3JX7F4u7rCUTBOn8x9e7lCQYOuglKjjdb0jh4mfEeEDFV5EQem2YlgWRc6dGnJ9rl8wbC7Y5yJTqC7UFicsIT/132"
-                    class="img"
-                  />
+                  <img :src="userInfo.headimgurl" class="img" />
                 </figure>
-                <b class="text">陈文龙</b>
+                <b class="text">{{ userInfo.nickname }}</b>
               </div>
             </div>
             <p class="coin-balance coin-ani-finish">
-              <i class="icon com-coin"></i> <b class="num din">19</b>
+              <i class="icon com-coin"></i>
+              <b class="num din">{{ userInfo.score }}</b>
             </p>
             <button
               class="btn-go-coin-record"
@@ -53,12 +51,12 @@
         <div class="page-home-packages">
           <section class="page-home-package-list">
             <article
-              v-for="item in redBags"
-              :key="item.id"
-              @click="changeRedbag(item.id)"
+              v-for="(item, index) in ReceiveType"
+              :key="index"
+              @click="changeRedbag(index)"
               :class="[
                 'page-home-package-item',
-                item.id === activeBag && 'page-home-package-item-on'
+                index === activeBag && 'page-home-package-item-on'
               ]"
             >
               <header class="header">
@@ -67,12 +65,12 @@
                   <span v-if="item.isNew" class="tip">NEW</span>
                 </h3>
                 <div class="score">
-                  <span class="udc-medium">{{ item.price }}</span
+                  <span class="udc-medium">{{ item.score }}</span
                   >粮票<span class="times">/次</span>
                 </div>
               </header>
               <p class="desc">
-                {{ item.desc }}
+                {{ item.description }}
               </p>
               <i class="icon-done"></i>
             </article>
@@ -87,11 +85,12 @@
                   <div class="input-box">
                     <input
                       id="container-phone-input"
-                      maxlength="13"
+                      maxlength="11"
                       placeholder="请输入手机号"
-                      type="tel"
+                      type="text"
                       v-model="phone"
                       class="input"
+                      @input="mobileInput"
                     />
                     <button class="btn-clear" @click="phone = ''">
                       <van-icon name="cross" />
@@ -99,45 +98,39 @@
                   </div>
                 </div>
 
-                <!-- 换手机号 -->
-                <div class="container-form">
+                <div class="container-form" v-if="showSmsBox">
                   <div class="input-box">
                     <input
-                      id="container-phone-input"
-                      maxlength="13"
-                      placeholder="请输入手机号"
-                      type="tel"
-                      v-model="phone"
+                      max="6"
+                      placeholder="请输入验证码"
+                      type="number"
                       class="input"
+                      v-model="smsCode"
                     />
                     <button class="btn-clear" @click="phone = ''">
                       <van-icon name="cross" />
                     </button>
-                    <button class="btn btn-send-code">
-                      获取验证码
+                    <button class="btn btn-send-code" @click="getSmsCode">
+                      {{ smsBtnText }}
                     </button>
                   </div>
-                  <div class="input-box">
-                    <input
-                      maxlength="6"
-                      placeholder="请输入验证码"
-                      type="tel"
-                      data-id="code"
-                      data-input-handle="onCodeInput"
-                      class="input"
-                    />
-                  </div>
+                  <!-- <div class="input-box">
+
+                  </div> -->
                 </div>
               </div>
               <div class="page-home-packages-footer">
-                <button class="com-btn-main">
+                <button @click="onSubmit" class="com-btn-main" v-if="canSubmit">
+                  立即领取
+                </button>
+                <button v-else class="com-btn-main disable" disable>
                   立即领取
                 </button>
 
                 <!-- 换手机号 -->
-                <button class="com-btn-main disable" disable>
+                <!-- <button class="com-btn-main disable" disable>
                   点击登录并领取
-                </button>
+                </button> -->
               </div>
             </div>
             <!---->
@@ -165,85 +158,381 @@
       </div>
     </section>
 
-    <receive-success v-if="showReceiveSuccess" @close-overlay="showReceiveSuccess = false" />
-    <receive-fail v-if="showReceiveFail" @close-overlay="showReceiveFail = false" />
+    <div class="img_code_layer" v-show="showImgCodeBox">
+      <div class="bg" @click="showImgCodeBox = false"></div>
+      <div class="block" @click="imgCodeBoxClick">
+        <div class="input-box">
+          <input
+            type="text"
+            maxlength="4"
+            v-model="captchaCode"
+            placeholder="请输入图形验证码"
+          />
+          <img :src="codeImg" alt="图形验证码" @click="getImgCode" />
+        </div>
+
+        <button type="button" class="btn" @click="sendSms">确定</button>
+      </div>
+    </div>
+
+    <van-overlay :show="showSueccess" :z-index="3">
+      <div class="page-home-red-success-pop-box-wrapper">
+        <button
+          class="page-home-red-success-pop-close"
+          @click="showSueccess = false"
+        >
+          <van-icon name="cross" />
+        </button>
+        <div class="page-home-red-success-pop-box">
+          <h3 class="title">
+            {{ redPacksRes.title }}
+          </h3>
+          <p class="desc">
+            {{ redPacksRes.subTitle }}
+          </p>
+          <div class="list">
+            <article
+              class="item"
+              v-for="(item, index) in redPacksRes.list"
+              :key="index"
+            >
+              <div class="coupon-num">
+                <span class="unit">￥</span> <b class="num">{{ item.amount }}</b>
+              </div>
+              <i class="split"></i>
+              <div class="info">
+                <h5 class="coupon-name">{{ item.title }}</h5>
+                <span class="coupon-desc">满{{ item.threshold }}可用</span>
+              </div>
+            </article>
+          </div>
+          <div class="footer">
+            <p class="footer-desc">
+              请打开饿了么App"我的-红包-店铺红包"查看
+            </p>
+            <div>
+              <button class="footer-btn">
+                <a :href="href">再领取一个免费红包（{{ count }}S后跳转）</a>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </van-overlay>
+
+    <receive-fail
+      v-if="showFail"
+      :msg="failMsg"
+      @close-overlay="showFail = false"
+    />
   </div>
 </template>
 
 <script>
-import receiveSuccess from '@/components/receiveSuccess.vue'
+import { mapGetters } from 'vuex'
 import receiveFail from '@/components/receiveFail.vue'
 
 export default {
-  name: "home",
-  components: { receiveSuccess, receiveFail },
+  name: 'home',
+  components: { receiveFail },
   data() {
     return {
-      redBags: [
-        {
-          id: 1,
-          title: "品质联盟35-5",
-          price: 5,
-          isNew: false,
-          desc:
-            "大概率出1个35-5的品质红包，附带1个10-2的品质红包。每个手机号每天限领1次，低于5元不扣粮票"
-        },
-        {
-          id: 2,
-          title: "全场通用35-5",
-          price: 5,
-          isNew: true,
-          desc:
-            "此红包为满35-5的通用红包，所有店铺都可用，每个手机号每天限领1次，低于5元不扣粮票"
-        },
-        {
-          id: 3,
-          title: "4合1红包礼包",
-          price: 5,
-          isNew: false,
-          desc:
-            "必出一个5元品质联盟红包。此礼包一般包含4个红包，分别为：全场通用(25-4)、品质联盟(25或30-5)、下午茶红包(30-5)和夜宵红包(45-6)"
-        },
-        {
-          id: 4,
-          title: "全场通用45-6",
-          price: 5,
-          isNew: false,
-          desc:
-            "出一个满45-6的通用红包。【领取后有效期为15分钟】如不是马上点外卖请勿领取！！！每个手机号每天限领1次，低于6元不扣粮票"
-        },
-        {
-          id: 5,
-          title: "全场通用45-5",
-          price: 5,
-          isNew: false,
-          desc:
-            "出一个满45-5的通用红包，所有店铺都可用，每个手机号每天限领1次，低于5元不扣粮票"
-        },
-        {
-          id: 6,
-          title: "品质联盟组合大包",
-          price: 5,
-          isNew: false,
-          desc:
-            "大概率出3个品质联盟【40-6，50-7和90-14】、1个【通用红包30-4】和1个【星巴克专送红包20-9】，每个手机号每天限领1次，低于5元不扣粮票"
-        }
-      ],
-      phone: "",
+      showSueccess: false,
+      showFail: false,
+      ReceiveType: [],
+      phone: '',
 
-      activeBag: 1,
+      activeBag: 0,
+      id: '',
+      canSubmit: false,
+      redPacksRes: {},
+      showSmsBox: false,
+      smsCode: '',
+      showImgCodeBox: false,
+      isLogin: false,
+      codeImg: '',
+      captchaCode: '', // 字段名是后端定义的
+      captchaHash: '',
+      validateToken: '',
+      count: 7,
+      smsCount: 60,
+      smsBtnText: '获取验证码',
+      timer: null,
+      failMsg: '很抱歉，领取失败!',
+      href: ''
+    }
+  },
 
-      showReceiveSuccess: false,
-      showReceiveFail: false
-    };
+  computed: {
+    ...mapGetters(['userInfo'])
+  },
+
+  watch: {
+    userInfo: function() {
+      this.checkUserMobile()
+    }
+  },
+
+  beforeMount() {
+    this.Redpacks()
   },
 
   methods: {
-    changeRedbag(id) {
-      this.activeBag = id;
+    changeRedbag(index) {
+      this.activeBag = index
+    },
+
+    async getUserInfo() {
+      const res = await this.$api.getUserInfo()
+
+      this.$store.commit('setUserInfo', res.data)
+    },
+
+    closeSuccessLayer() {
+      window.clearInterval(this.timer)
+      this.showSueccess = false
+    },
+
+    async Redpacks() {
+      const res = await this.$api.redPacks()
+      this.id = res.data[0].id
+      this.ReceiveType = res.data
+    },
+
+    async onSubmit() {
+      if (!this.phone) {
+        this.$toast('请输入手机号码!')
+        return false
+      }
+
+      const loginEle = await this.loginEle()
+      if (!loginEle) {
+        return false
+      }
+
+      this.$toast.loading({
+        message: '领取中，请稍等...',
+        forbidClick: true,
+        duration: 0
+      })
+
+      const { code, data, msg } = await this.$api.getredPacks({
+        id: this.ReceiveType[this.activeBag].id,
+        mobile: this.phone
+      })
+
+      this.$toast.clear()
+
+      if (code !== 200) {
+        if (code === 1006) {
+          this.$dialog
+            .alert({
+              confirmButtonText: '获取积分',
+              showCancelButton: true,
+              message: '您的积分余额不足，快去获取积分吧!'
+            })
+            .then(() => {
+              this.$router.push({ path: '/cahrge' })
+            })
+            .catch(() => {})
+          return
+        }
+        if (msg !== '') {
+          this.failMsg = msg
+        }
+        this.showFail = true
+        return
+      }
+      this.getUserInfo()
+      this.redPacksRes = data
+
+      if (data.type === 2) {
+        location.href = data.url
+        return
+      }
+      this.href = this.getCpsUrl()
+      this.showSueccess = true
+
+      this.timer = setInterval(() => {
+        this.count--
+        if (this.count === 0) {
+          window.clearInterval(this.timer)
+          location.href = this.href
+        }
+      }, 1000)
+    },
+
+    getCpsUrl() {
+      let platform = JSON.parse(localStorage.getItem('platform'))
+      let index = Math.floor(Math.random() * platform.cps.length)
+      return platform.cps[index]
+    },
+
+    loginEle() {
+      return new Promise(async resolve => {
+        const that = this
+        if (this.isLogin) {
+          resolve(true)
+          return
+        }
+        if (!this.smsCode) {
+          this.$toast('请输入短信验证码!')
+          resolve(false)
+          return
+        }
+
+        let currentScore = this.ReceiveType[this.activeBag].socre
+        if (this.userInfo.score < currentScore) {
+          this.$dialog
+            .alert({
+              confirmButtonText: '获取积分',
+              showCancelButton: true,
+              message: '您的积分余额不足，快去获取积分吧!'
+            })
+            .then(() => {
+              that.$router.push({ path: '/charge' })
+            })
+            .catch(() => {})
+          resolve(false)
+          return
+        }
+
+        const { phone, smsCode, validateToken } = this
+
+        this.$toast.loading({
+          message: '领取中，请稍等...',
+          forbidClick: true,
+          duration: 0
+        })
+
+        const loginRes = await this.$api.loginBySms({
+          mobile: phone,
+          smsCode,
+          validateToken
+        })
+
+        this.$toast.clear()
+
+        if (loginRes.code !== 200) {
+          this.$toast(loginRes.msg)
+          resolve(false)
+          return
+        }
+        this.canSubmit = true
+        this.isLogin = true
+        this.showSmsBox = false
+        resolve(true)
+      })
+    },
+
+    async checkUserMobile() {
+      const mobile = this.userInfo.mobile
+      if (mobile) {
+        this.phone = mobile
+        const res = await this.$api.getUserCurrent({ mobile })
+        if (res.code === 200 && res.data.isLogin) {
+          this.canSubmit = true
+          this.isLogin = true
+          this.showSmsBox = false
+          return
+        }
+        this.showSmsBox = true
+        return
+      }
+      this.showSmsBox = true
+    },
+
+    async mobileInput() {
+      let reg = /^1[3|4|5|7|8|9][0-9]{9}$/
+      const mobile = this.phone
+      if (reg.test(mobile)) {
+        const res = await this.$api.getUserCurrent({ mobile })
+        if (res.code === 200 && res.data.isLogin) {
+          this.canSubmit = true
+          this.showSmsBox = false
+          this.isLogin = true
+        } else {
+          this.showSmsBox = true
+          this.isLogin = false
+        }
+      }
+
+      let reg2 = new RegExp('^[0-9]*$')
+      if (!reg2.test(mobile[mobile.length - 1])) {
+        this.phone = mobile.substring(0, mobile.length - 1)
+      }
+    },
+
+    getSmsCode() {
+      let reg = /^1[3|4|5|7|8|9][0-9]{9}$/
+      if (!reg.test(this.phone)) {
+        this.$toast('请输入正确的手机号码!')
+        return
+      }
+      this.$toast.loading({
+        message: '加载中...',
+        forbidClick: true
+      })
+      this.getImgCode(() => {
+        this.$nextTick(() => {
+          this.$toast.clear()
+          this.showImgCodeBox = true
+        })
+      })
+    },
+
+    async getImgCode(cb) {
+      const res = await this.$api.getCaptcha({
+        mobile: this.phone
+      })
+      if (res.code !== 200) {
+        this.$toast(res.msg)
+        return
+      }
+      this.captchaHash = res.data.captchaHash
+      this.codeImg = 'data:image/jpg;base64,' + res.data.captchaImage
+
+      typeof cb === 'function' && cb()
+    },
+
+    async sendSms() {
+      const { phone, captchaHash, captchaCode } = this
+      if (captchaCode === '') {
+        this.$toast('请输入图形验证码')
+        return
+      }
+      const res = await this.$api.sendSms({
+        mobile: phone,
+        captchaHash,
+        captchaCode
+      })
+      if (res.code !== 200) {
+        this.captchaCode = ''
+        this.getImgCode()
+        this.$toast(res.msg)
+        return
+      }
+
+      this.$toast('短信验证码发送成功！请注意查收')
+      this.canSubmit = true
+      this.validateToken = res.data.validateToken
+      this.showImgCodeBox = false
+      this.smsCount = 60
+      var i = setInterval(() => {
+        this.smsCount--
+        this.smsBtnText = this.smsCount + 'S'
+        if (this.smsCount === 0) {
+          this.smsBtnText = '重新获取'
+          window.clearInterval(i)
+        }
+      }, 1000)
+    },
+
+    imgCodeBoxClick(e) {
+      e.stopPropagation()
     }
   }
-};
+}
 </script>
 
 <style lang="less">
@@ -268,7 +557,7 @@ export default {
   }
 
   &:after {
-    content: ":)";
+    content: ':)';
     top: 0;
     height: 5.333333rem;
     background: #5587fc;
@@ -287,7 +576,7 @@ export default {
   padding: 0 0 1.066667rem;
 
   &:before {
-    content: "";
+    content: '';
     position: absolute;
     z-index: -1;
     left: 0;
@@ -299,7 +588,7 @@ export default {
   }
 
   &:after {
-    content: "";
+    content: '';
     position: absolute;
     z-index: -1;
     left: 0;
@@ -693,6 +982,313 @@ export default {
 
   to {
     opacity: 0;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+
+.img_code_layer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  z-index: 2;
+
+  .bg {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+  }
+
+  .block {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 80%;
+    padding: 4vw;
+    background-color: #fff;
+    border-radius: 6px;
+    transform: translate(-50%, -50%);
+
+    .input-box {
+      display: flex;
+      align-items: center;
+    }
+
+    input,
+    img {
+      display: inline-block;
+    }
+
+    input {
+      width: 52vw;
+      padding: 2vw 0 2vw 4vw;
+      background: rgba(242, 242, 242, 1);
+    }
+
+    img {
+      width: 20vw;
+      height: 9vw;
+    }
+
+    button {
+      width: 100%;
+      padding: 2.5vw;
+      margin-top: 3vw;
+      margin-bottom: 2vw;
+      color: #fff;
+      background: #2864fa;
+      border-radius: 0.1rem;
+    }
+  }
+}
+</style>
+
+<style lang="less" scoped>
+.page-home-red-success-pop-box-wrapper {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate3d(-50%, -50%, 0);
+}
+
+.page-home-red-success-pop-close {
+  position: absolute;
+  right: 0;
+  top: -1.466667rem;
+  width: 0.693333rem;
+  height: 0.693333rem;
+  font-size: 0.346667rem;
+  color: hsla(0, 0%, 100%, 0.5);
+  font-weight: 700;
+  line-height: 0.666667rem;
+  border: 0.04rem solid hsla(0, 0%, 100%, 0.4);
+  border-radius: 1.333333rem;
+}
+
+.page-home-red-success-pop-box {
+  position: relative;
+  width: 8.533333rem;
+  border-radius: 0 0 0.466667rem 0.466667rem;
+  background: #d8452b;
+  min-height: 5.333333rem;
+  transform: scale(0.5);
+  opacity: 0;
+  animation: page-home-red-success-pop-box 0.4s
+    cubic-bezier(0, 0.47, 0.45, 1.05) 0.4s forwards;
+
+  &:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: -1.253333rem;
+    width: 100%;
+    height: 1.266667rem;
+    background: url('../assets/images/redbag-head.svg') no-repeat top;
+    background-size: 100% auto;
+  }
+
+  .title {
+    font-size: 0.426667rem;
+    color: #ffdeaa;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: center;
+    transform: translate3d(0, -0.333333rem, 0);
+  }
+
+  .desc {
+    width: max-content;
+    padding: 0.066667rem 0.333333rem;
+    margin: -0.266667rem auto 0;
+    font-size: 0.32rem;
+    color: rgba(255, 222, 170, 0.9);
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: center;
+    border: 0.026667rem solid rgba(255, 222, 170, 0.5);
+    border-radius: 1.333333rem;
+    transform: scale(0.82);
+    transform-origin: 50%;
+  }
+
+  .list {
+    margin: 0.533333rem 0.266667rem 0;
+    padding: 0 0 0.666667rem;
+    min-height: 1.066667rem;
+    max-height: 5.333333rem;
+    overflow: scroll;
+  }
+
+  .item {
+    display: flex;
+    align-items: center;
+    margin: 0 auto 0.2rem;
+    width: 6.933333rem;
+    background: #fff;
+    border-radius: 0.066667rem;
+    box-shadow: 0 0.026667rem 0.066667rem 0.04rem rgba(0, 0, 0, 0.1);
+    height: 1.653333rem;
+
+    .coupon-num {
+      flex-shrink: 0;
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      width: 1.866667rem;
+      color: #f34a4a;
+      font-weight: 400;
+      line-height: 1.5;
+
+      .num {
+        font-size: 0.693333rem;
+      }
+
+      .unit {
+        font-size: 0.32rem;
+      }
+    }
+
+    .coupon-name {
+      display: block;
+      font-size: 0.346667rem;
+      color: #222;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .coupon-desc {
+      display: block;
+      font-size: 0.32rem;
+      color: #999;
+      font-weight: 400;
+      line-height: 1.5;
+      transform: scale(0.85);
+      transform-origin: 0 50%;
+    }
+
+    .info {
+      margin: 0 0 0 0.533333rem;
+    }
+
+    .split {
+      position: relative;
+      flex-shrink: 0;
+      height: 0.933333rem;
+      border-left: 0.04rem dotted #eaeaea;
+
+      &:after,
+      &:before {
+        content: '';
+        position: absolute;
+        z-index: 1;
+        left: 50%;
+        margin: 0 0 0 -0.186667rem;
+        width: 0.32rem;
+        height: 0.32rem;
+        border-radius: 1.333333rem;
+        background: #d8452b;
+        -webkit-transform: scale(0.8);
+        transform: scale(0.8);
+        -webkit-transform-origin: 50%;
+        transform-origin: 50%;
+      }
+
+      &:before {
+        top: -0.533333rem;
+      }
+
+      &:after {
+        bottom: -0.533333rem;
+      }
+    }
+  }
+
+  .footer {
+    position: relative;
+    width: 100%;
+    padding: 0.266667rem 0 0.533333rem;
+    border-radius: 0 0 0.466667rem 0.466667rem;
+    background: #ea5644;
+
+    &:before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: -0.56rem;
+      width: 100%;
+      height: 0.6rem;
+      background: url('../assets/images/redbag-foot-befero.svg') no-repeat top;
+      background-size: 100% auto;
+    }
+  }
+
+  .footer-desc {
+    width: max-content;
+    padding: 0.066667rem 0.333333rem;
+    margin: -0.2rem auto 0;
+    font-size: 0.32rem;
+    color: rgba(255, 222, 170, 0.9);
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: center;
+    transform: scale(0.95);
+    transform-origin: 50%;
+  }
+
+  .footer-btn {
+    display: block;
+    margin: 0.2rem auto 0;
+    padding: 0.2rem 1.066667rem;
+    font-size: 0.373333rem;
+    color: #724f07;
+    font-weight: 400;
+    line-height: 1.5;
+    background-image: linear-gradient(90deg, #fdf8db, #ffd089);
+    border-radius: 1.333333rem;
+    box-shadow: 0 0.16rem 0.266667rem rgba(182, 15, 15, 0.3);
+  }
+
+  .footer-btn-small {
+    display: block;
+    padding: 0.266667rem 0.4rem;
+    margin: 0.066667rem auto -0.4rem;
+    font-size: 0.32rem;
+    color: #ffd089;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: center;
+  }
+}
+
+.page-home-red-success-pop-close {
+  position: absolute;
+  right: 0;
+  top: -1.466667rem;
+  width: 0.693333rem;
+  height: 0.693333rem;
+  font-size: 0.346667rem;
+  color: hsla(0, 0%, 100%, 0.5);
+  font-weight: 700;
+  line-height: 0.666667rem;
+  border: 0.04rem solid hsla(0, 0%, 100%, 0.4);
+  border-radius: 1.333333rem;
+}
+
+@keyframes page-home-red-success-pop-box {
+  45% {
+    opacity: 1;
+  }
+
+  90% {
+    -webkit-transform: scale(1.04);
+    transform: scale(1.04);
+  }
+
+  to {
+    opacity: 1;
     -webkit-transform: scale(1);
     transform: scale(1);
   }

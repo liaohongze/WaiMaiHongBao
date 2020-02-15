@@ -1,25 +1,38 @@
-import "./assets/js/flexible";
-import Vue from "vue";
-import App from "./App.vue";
-import router from "./router";
-import VueClipboard from "vue-clipboard2";
+import './assets/js/flexible'
+import Vue from 'vue'
+import App from './App.vue'
+import router from './router'
+import store from './store'
+import api from './api'
+import VueClipboard from 'vue-clipboard2'
 
-import { Icon, Tabbar, TabbarItem, Overlay, Field, List } from "vant";
+import { Icon, Tabbar, TabbarItem, Overlay, Field, List } from 'vant'
 
-import "./assets/less/index.less";
+import './assets/less/index.less'
 
-Vue.use(Icon);
-Vue.use(Overlay);
-Vue.use(Field);
-Vue.use(List);
-Vue.use(Tabbar).use(TabbarItem);
+async function initail() {
+  const res = await api.getPlatformInfo()
 
-VueClipboard.config.autoSetContainer = true;
-Vue.use(VueClipboard);
+  localStorage.setItem('platform', JSON.stringify(res.data))
 
-Vue.config.productionTip = false;
+  new Vue({
+    router,
+    store,
+    render: h => h(App)
+  }).$mount('#app')
+}
 
-new Vue({
-  router,
-  render: h => h(App)
-}).$mount("#app");
+Vue.use(Icon)
+Vue.use(Overlay)
+Vue.use(Field)
+Vue.use(List)
+Vue.use(Tabbar).use(TabbarItem)
+
+Vue.use(VueClipboard)
+
+Vue.config.productionTip = false
+VueClipboard.config.autoSetContainer = true
+
+Vue.prototype.$api = api
+
+initail()

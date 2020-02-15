@@ -4,7 +4,8 @@
       <div class="balance">
         <span class="name">当前粮票</span>
         <p class="coin coin-ani-finish">
-          <i class="com-coin icon"></i><b class="num din">19</b>
+          <i class="com-coin icon"></i
+          ><b class="num din">{{ userInfo.score }}</b>
         </p>
       </div>
       <div class="user_info" @click="$router.push({ path: '/' })">
@@ -16,26 +17,25 @@
         <h3 class="section-title">请选择优惠套餐</h3>
         <div class="section-container">
           <ul id="page-top-up-package">
-            <li class="item">
+            <li class="item" v-for="(item, index) in typeList" :key="index">
               <div class="content">
-                <b class="din price">24<span class="unit">粮票</span></b>
+                <b class="din price">{{ item.score }}<span class="unit">粮票</span></b>
                 <ol class="info">
-                  <li class="info-item"><b class="b">￥2.99</b></li>
+                  <li class="info-item"><b class="b">￥{{ item.amount }}</b></li>
                   <li class="info-item"><b class="b">0.12</b>/粮票</li>
                 </ol>
                 <span class="desc">
-                  预计节省24元外卖费用
+                  {{ item.description }}
                 </span>
               </div>
             </li>
-            <li class="item">
+            <!-- <li class="item">
               <div class="content">
                 <b class="din price">100<span class="unit">粮票</span></b>
                 <ol class="info">
                   <li class="info-item"><b class="b">￥9.99</b></li>
                   <li class="info-item"><b class="b">0.1</b>/粮票</li>
                 </ol>
-                <!---->
                 <span class="desc">
                   预计节省100元外卖费用
                 </span>
@@ -66,7 +66,7 @@
                   预计节省1400元外卖费用
                 </span>
               </div>
-            </li>
+            </li> -->
           </ul>
         </div>
       </div>
@@ -77,7 +77,8 @@
           <div class="page-topUp-rule">
             <ul>
               <li class="item">
-                1、请关注公众号：<button class="btn">免费外卖券</button
+                1、请关注公众号：<button class="btn" @click="show = true">
+                  免费外卖券</button
                 >，以便更好的找到使用入口
               </li>
               <li class="item">
@@ -89,10 +90,18 @@
       </div>
       <div id="page-top-up-footer">
         <ul class="link-list">
-          <li class="item">粮票记录</li>
+          <li class="item" @click="$router.push('/record')">粮票记录</li>
         </ul>
       </div>
     </div>
+
+    <van-overlay :show="show" @click="show = false">
+      <div class="wrapper">
+        <div class="block">
+          <img :src="kfImg" />
+        </div>
+      </div>
+    </van-overlay>
 
     <van-overlay :show="showSuccess" :z-index="2" @click="showSuccess = false">
       <section class="page-top-up-success-pop-box">
@@ -110,13 +119,35 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 export default {
   data() {
     return {
-      showSuccess: false
-    };
+      showSuccess: false,
+      show: false,
+      platform: {},
+      typeList: [],
+      kfImg: ''
+    }
+  },
+
+  computed: {
+    ...mapGetters(['userInfo'])
+  },
+
+  mounted() {
+    this.getScores()
+    this.platform = JSON.parse(localStorage.getItem('platform'))
+    this.kfImg = this.platform.kfImg
+  },
+
+  methods: {
+    async getScores() {
+      const res = await this.$api.scores()
+      this.typeList = res.data
+    }
   }
-};
+}
 </script>
 
 <style lang="less" scoped>
@@ -125,7 +156,7 @@ export default {
   min-height: 100vh;
 
   &:before {
-    content: ":)";
+    content: ':)';
     position: fixed;
     z-index: -1;
     left: 0;
@@ -142,7 +173,7 @@ export default {
   }
 
   &:after {
-    content: "";
+    content: '';
     position: fixed;
     z-index: -2;
     left: 0;
@@ -156,7 +187,7 @@ export default {
 #page-top-up-header {
   display: flex;
   justify-content: space-between;
-  background: url("../assets/images/charge-head-bg.svg") no-repeat 50%,
+  background: url('../assets/images/charge-head-bg.svg') no-repeat 50%,
     linear-gradient(10deg, rgba(32, 82, 226, 0.8), #2052e2 60%), #fff;
   background-size: cover;
   padding: 0.666667rem 0 1.066667rem;
@@ -178,7 +209,7 @@ export default {
       opacity: 0.8;
       transform: scale(0.98);
       transform-origin: 50%;
-      animation: page-top-up-header-coin 0.3s ease-in-out infinite;
+      animation: page-top-up-header-coin 0.6s ease-in-out infinite;
 
       .coin-ani-finish {
         animation: none;
@@ -268,7 +299,7 @@ export default {
       text-shadow: 0.053333rem 0.053333rem 0 hsla(0, 0%, 60%, 0.2);
 
       &:before {
-        content: "";
+        content: '';
         position: absolute;
         z-index: 2;
         left: 0;
@@ -420,7 +451,7 @@ export default {
   transform: translate3d(-50%, -50%, 0);
   width: 7.333333rem;
   height: 6.933333rem;
-  background: url("../assets/images/charge-success-bg.svg") no-repeat top;
+  background: url('../assets/images/charge-success-bg.svg') no-repeat top;
   background-size: 100% auto;
   padding: 0.853333rem 0 0;
   box-sizing: border-box;
@@ -446,8 +477,7 @@ export default {
     height: 1.466667rem;
     margin: 0 auto;
     transform: translate3d(0.066667rem, 0, 0);
-    background: url(../assets/images/charge-success.svg) no-repeat
-      50%;
+    background: url(../assets/images/charge-success.svg) no-repeat 50%;
     background-size: 100% auto;
   }
 
@@ -490,6 +520,23 @@ export default {
     opacity: 1;
     -webkit-transform: translate3d(-50%, -60%, 0) scale(1);
     transform: translate3d(-50%, -60%, 0) scale(1);
+  }
+}
+
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.block {
+  width: 80vw;
+  background-size: 100%;
+  position: relative;
+
+  img {
+    width: 100%;
   }
 }
 </style>
